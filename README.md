@@ -1,2 +1,2 @@
-# moodle-local_attendance_ws
-Attendance Web service
+# moodle-local_attendance
+Attendance Utilities
