@@ -24,13 +24,13 @@
 
 require_once("{$CFG->libdir}/formslib.php");
 
-class register_form extends moodleform {
+class mail_form extends moodleform {
 
     function definition() {
         $mform =& $this->_form;
 		
-		$mform->addElement('html', '<h2>' . get_string('register', 'local_attendance')  . '</h2>');
-
+		$mform->addElement('html', '<h2>' . get_string('mail', 'local_attendance')  . '</h2>');
+		
 		global $USER;
 		$userid = $USER->id;
 		$myCourseIds = array();
@@ -39,24 +39,16 @@ class register_form extends moodleform {
 		foreach($myCourseIds as $myCourseId) {
 			$key = $myCourseId->idnumber;
 			$value = $myCourseId->shortname;
-			$courseArray[$key] = $value;
+			$selectArray[$key] = $value;
+			//echo 'key - ' . $key . ' : value - ' . $value;
 		}
-		$today = date();
-		$myCourseSessions = getSessions($today, $userid);
-		foreach($myCourseSessions as $myCourseSession) {
-			$key = $myCourseSession->sessdate;
-			if($key >= $today) {
-				$value = date("d M y, h:i", $myCourseSession->sessdate);
-				$sessionArray[$key] = $value;
-				//echo 'key:' . $key . ' and value: ' . $value . '<br>';
-				//echo 'user id: '. $userid;
-			}
-		}
-		$mform->addElement('select', 'courseid', get_string('courseid', 'local_attendance'), $courseArray);
+		//DEBUG
+		//$mform->addElement('text', 'userid', 'user id');
+		//$mform->setDefault('userid', $userid);
+		$mform->addElement('select', 'courseid', get_string('courseid', 'local_attendance'), $selectArray);
 		
-		$mform->addElement('select', 'sessdate', get_string('day', 'local_attendance'), $sessionArray);
-		
-        $this->add_action_buttons(true, get_string('save', 'local_attendance'));
+				
+        $this->add_action_buttons(true, get_string('send', 'local_attendance'));
     }
 	
 	function validation($data, $files) {

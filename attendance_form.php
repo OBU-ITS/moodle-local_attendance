@@ -22,6 +22,7 @@
  *
  */
 
+
 require_once("{$CFG->libdir}/formslib.php");
 
 class attendance_form extends moodleform {
@@ -30,8 +31,28 @@ class attendance_form extends moodleform {
         $mform =& $this->_form;
 		
 		$mform->addElement('html', '<h2>' . get_string('attendance', 'local_attendance')  . '</h2>');
+		$mform->addElement('html', '<p>This report allows you to retrieve attendance data for your academic advisees.</p>');
 
-		$mform->addElement('text', 'student_number', get_string('student_number', 'local_attendance'));
+		//$mform->addElement('text', 'student_number', get_string('student_number', 'local_attendance'));
+		global $USER;
+		$userid = $USER->id;
+		$myAdvisees = array();
+		$adviseeArray = array();
+		$myAdvisees = get_academic_advisees($userid);
+		foreach($myAdvisees as $myAdvisee) {
+			$key = $myAdvisee->username;
+			$value = $myAdvisee->firstname . ' ' . $myAdvisee->lastname . ' (' . $myAdvisee->username . ')';
+			$adviseeArray[$key] = $value;
+			//DEBUG
+			//echo 'key:' . $key . ' and value: ' . $value . '<br>';
+			//echo 'user id: '. $userid;
+			//echo $myAdvisee->username . $myAdvisee->lastname . $myAdvisee->firstname . '<br/>';
+		}
+		//DEBUG
+		//$mform->addElement('text', 'userid', 'user id');
+		//$mform->setDefault('userid', $userid);
+		
+		$mform->addElement('select', 'student_number', get_string('student_number', 'local_attendance'), $adviseeArray);
 
         $this->add_action_buttons(true, get_string('save', 'local_attendance'));
     }

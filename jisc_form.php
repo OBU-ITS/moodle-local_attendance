@@ -24,38 +24,15 @@
 
 require_once("{$CFG->libdir}/formslib.php");
 
-class register_form extends moodleform {
+class jisc_form extends moodleform {
 
     function definition() {
         $mform =& $this->_form;
 		
-		$mform->addElement('html', '<h2>' . get_string('register', 'local_attendance')  . '</h2>');
+		$mform->addElement('html', '<h2>' . get_string('attendance_jisc', 'local_attendance') . '</h2>');
 
-		global $USER;
-		$userid = $USER->id;
-		$myCourseIds = array();
-		$selectArray = array();
-		$myCourseIds = getMyCourses($userid);
-		foreach($myCourseIds as $myCourseId) {
-			$key = $myCourseId->idnumber;
-			$value = $myCourseId->shortname;
-			$courseArray[$key] = $value;
-		}
-		$today = date();
-		$myCourseSessions = getSessions($today, $userid);
-		foreach($myCourseSessions as $myCourseSession) {
-			$key = $myCourseSession->sessdate;
-			if($key >= $today) {
-				$value = date("d M y, h:i", $myCourseSession->sessdate);
-				$sessionArray[$key] = $value;
-				//echo 'key:' . $key . ' and value: ' . $value . '<br>';
-				//echo 'user id: '. $userid;
-			}
-		}
-		$mform->addElement('select', 'courseid', get_string('courseid', 'local_attendance'), $courseArray);
-		
-		$mform->addElement('select', 'sessdate', get_string('day', 'local_attendance'), $sessionArray);
-		
+		$mform->addElement('checkbox', 'pilot_data', get_string('pilot_data', 'local_attendance'));
+
         $this->add_action_buttons(true, get_string('save', 'local_attendance'));
     }
 	

@@ -42,7 +42,8 @@ $PAGE->set_title(get_string('attendance:admin', 'local_attendance'));
 echo $OUTPUT->header();
 
 /*<ul>
- 	<li><a href="register.php">Generate register</a> (PDF)</li>
+ 	
+ *  
  </ul>
  <h3>Reports (CSV)</h3>*/
 echo '
@@ -52,7 +53,9 @@ echo '
  <ul>	
  	<li><a href="att_all_csv.php">' . get_string('attendance_all', 'local_attendance') . '</a></li>
  	<li><a href="attendance_csv.php">' . get_string('attendance', 'local_attendance') . '</a></li>
- 
+ 	<li><a href="jisc_csv.php">' . get_string('attendance_jisc', 'local_attendance') . '</a></li>
+ 	<li><a href="mail.php">' . get_string('mail', 'local_attendance') . '</a></li>
+ 	<li><a href="register.php">Generate register</a> (PDF)</li>
  </ul>
 ';
 

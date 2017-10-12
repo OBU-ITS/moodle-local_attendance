@@ -40,7 +40,42 @@ function local_attendance_extend_navigation($navigation) {
 		}
 	}
 	
-	//$node = $nodeParent->add(get_string('register', 'local_attendance'), '/local/attendance/register.php');
+	$node = $nodeParent->add(get_string('mail', 'local_attendance'), '/local/attendance/mail.php');
 	$node = $nodeParent->add(get_string('attendance_all', 'local_attendance'), '/local/attendance/att_all_csv.php');
 	$node = $nodeParent->add(get_string('attendance', 'local_attendance'), '/local/attendance/attendance_csv.php');
+	$node = $nodeParent->add(get_string('attendance_jisc', 'local_attendance'), '/local/attendance/jisc_csv.php');
+	$node = $nodeParent->add(get_string('register', 'local_attendance'), '/local/attendance/register.php');
+}
+
+function local_attendance_extend_settings_navigation($settingsnav, $context) {
+    global $PAGE;
+
+    // Only add this settings item on non-site course pages.
+    if (!$PAGE->course or ($PAGE->course->id == 1)) {
+        return;
+    }
+    
+    // Only let users with the appropriate capability see this settings item.
+     if (!has_capability('mod/attendance:takeattendances', context_course::instance($PAGE->course->id))) {
+        return;
+    }
+    
+    if ($nodeParent = $settingsnav->find('courseadmin', navigation_node::TYPE_COURSE)) {
+        $title = get_string('register', 'local_attendance');
+        $url = new moodle_url('/local/attendance/course_register.php', array('id' => $PAGE->course->id));
+        $node = navigation_node::create(
+            $title,
+            $url,
+            navigation_node::NODETYPE_LEAF,
+            'register',
+            'register',
+            new pix_icon('t/addcontact', $title)
+        );
+
+        if ($PAGE->url->compare($url, URL_MATCH_BASE)) {
+            $node->make_active();
+        }
+
+        $nodeParent->add_node($node);
+    }
 }

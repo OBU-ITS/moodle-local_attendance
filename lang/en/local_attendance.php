@@ -35,7 +35,9 @@ $string['attendance'] = 'Attendance records for an individual student';
 $string['attendance_all'] = 'Attendance records for a given date range';
 $string['register_pdf'] = 'Generate attendance register (PDF)';
 $string['attendance_csv'] = 'Attendance report for an individual student';
-$string['attendance_csv'] = 'Attendance report for all students';
+$string['att_all_csv'] = 'Attendance report for all students';
+$string['attendance_jisc'] = 'Download attendance data for JISC UDD app';
+$string['pilot_data'] = 'Only attendance data for the modules in the pilot project';
 
 
 $string['date_from'] = 'From';
@@ -44,7 +46,9 @@ $string['invalid_date'] = 'Invalid date.';
 $string['no_attendance'] = 'No attendance records within these dates';
 $string['no_students'] = 'No students match your search';
 $string['register'] = 'Get register';
-$string['no_register'] = 'Sorry, we cannot find that course';
+$string['no_register'] = 'Sorry, we cannot find that session';
 $string['courseid'] = 'Course id';
 $string['day'] = 'Day';
+$string['send'] = 'Send email';
+$string['mail'] = 'Email an attendance register link';
 ?>

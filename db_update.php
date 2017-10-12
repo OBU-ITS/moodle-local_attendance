@@ -63,64 +63,140 @@ function get_attendance($studentnumber) {
 	return $DB->get_records_sql($sql, array($studentnumber));
 }
 
-
-function get_register($courseid, $day) {
+function get_academic_advisees($userid) {
     global $DB;
-	$now = date();
-	if ($day < $now) {
-		$sql = 'select ass.sessdate, c.shortname as course_name, u.username as student_number, u.firstname, u.lastname
-		from {attendance_log} alg, {attendance_statuses} ast, {attendance_sessions} ass, {user} u, {course} c
-		where ast.id = alg.statusid
-		and ass.id = alg.sessionid 
-		and  alg.studentid = u.id
-		and att.id = ast.attendanceid
-		and c.id = att.course
-		and c.idnumber = ?
-		and ass.sessdate = ?
-		order by u.lastname, u.firstname';
-	} else {
-  		$sql = 'select ass.sessdate, g.name as groupname, c.shortname as course_name, u.username as student_number, u.firstname, u.lastname
-	  	FROM {user} u, {user_enrolments} ue, {enrol} e, {role_assignments} ra, {context} ct, {course} c, {groups} g, {attendance_sessions} ass
-		where  u.id = ue.userid
-		and  ue.enrolid = e.id
-		and  u.id = ra.userid
-		and ra.contextid = ct.id
-		AND ct.contextlevel = 50
-		and ct.instanceid = c.id
-		and  c.id = g.courseid
-	    and g.id = ass.groupid
-	    and c.idnumber = ?
-		and ass.sessdate >= ?
-		order by u.lastname, u.firstname';
-	}
-	/*if ($day < $now) {
-		$sql = 'select ass.sessdate, c.shortname as course_name, u.username as student_number, u.firstname, u.lastname
-		from {attendance_log} alg 
-		join {attendance_statuses} ast on ast.id = alg.statusid
-		join {attendance_sessions} ass on ass.id = alg.sessionid 
-		join {user} u on u.id = alg.studentid
-		join {attendance} att on att.id = ast.attendanceid
-		join {course} c on c.id = att.course
-		where c.idnumber = ?
-		and ass.sessdate = ?
-		order by u.lastname, u.firstname';
-	} else {
-  		$sql = 'select ass.sessdate, g.name as groupname, c.shortname as course_name, u.username as student_number, u.firstname, u.lastname
-	  	FROM {user} u
-		JOIN {user_enrolments} ue ON ue.userid = u.id
-		JOIN {enrol} e ON e.id = ue.enrolid
-		JOIN {role_assignments} ra ON ra.userid = u.id
-		JOIN {context} ct ON ct.id = ra.contextid
-		AND ct.contextlevel =50
-		JOIN {course} c ON c.id = ct.instanceid
-		join {groups} g ON g.courseid = c.id  
-	    JOIN {attendance_sessions} ass ON ass.groupid = g.id 
-	    where c.idnumber = ?
-		and ass.sessdate >= ?
-		order by u.lastname, u.firstname';
-	}*/
-	return $DB->get_records_sql($sql, array($courseid, $day));
+
+	$sql = 'SELECT child.username, child.firstname, child.lastname
+			FROM {user} user
+			JOIN {role_assignments} ra ON ra.userid = user.id
+			JOIN {role} role ON role.id = ra.roleid
+			JOIN {context} ctx ON ctx.id = ra.contextid 
+			AND ctx.contextlevel = 30
+			JOIN {user} child ON child.id = ctx.instanceid
+			WHERE role.shortname = "academic_adviser"
+			and user.id = ?';
+		
+
+	return $DB->get_records_sql($sql, array($userid));
 }
+
+/* functions for jisc_csv.php */
+function get_jisc_data() {
+    global $DB;
+	
+	$sql = 'select 
+    ass.id AS event_id, 
+    att.name AS event_name, 
+    concat(c.fullname, ": ", ass.description) AS event_description,
+    u.username AS student_id, 
+    us.username AS staff_id, 
+    ass.attendanceid as event_type_id, 
+    id_counts.id_count as event_max_count,
+    c.shortname AS mod_instance_id,
+    ass.sessdate AS start_time, 
+    ass.sessdate + ass.duration AS end_time,
+    ast.acronym AS event_attended, 
+    ast.acronym AS attendance_late, 
+    alg.timetaken AS timestamp
+from mdl_attendance_log alg
+join (select sessionid, count(sessionid) as id_count from mdl_attendance_log group by sessionid ) id_counts on alg.sessionid = id_counts.sessionid
+join mdl_attendance_statuses ast on alg.statusid = ast.id
+join mdl_attendance_sessions ass on alg.sessionid = ass.id
+join mdl_user u on alg.studentid = u.id
+join mdl_user us on alg.takenby = us.id
+join mdl_attendance att on ast.attendanceid = att.id
+join mdl_course c on att.course = c.id
+where ass.sessdate > 1420070400
+order by ass.sessdate desc';
+	
+	return $DB->get_records_sql($sql, array());
+}
+
+function get_pilot_jisc_data() {
+    global $DB;
+	
+	$sql = 'select 
+    ass.id AS event_id, 
+    att.name AS event_name, 
+    concat(c.fullname, ": ", ass.description) AS event_description,
+    u.username AS student_id, 
+    us.username AS staff_id, 
+    ass.attendanceid as event_type_id, 
+    id_counts.id_count as event_max_count,
+    c.shortname AS mod_instance_id,
+    ass.sessdate AS start_time, 
+    ass.sessdate + ass.duration AS end_time,
+    ast.acronym AS event_attended, 
+    ast.acronym AS attendance_late, 
+    alg.timetaken AS timestamp
+from mdl_attendance_log alg
+join (select sessionid, count(sessionid) as id_count from mdl_attendance_log group by sessionid ) id_counts on alg.sessionid = id_counts.sessionid
+join mdl_attendance_statuses ast on alg.statusid = ast.id
+join mdl_attendance_sessions ass on alg.sessionid = ass.id
+join mdl_user u on alg.studentid = u.id
+join mdl_user us on alg.takenby = us.id
+join mdl_attendance att on ast.attendanceid = att.id
+join mdl_course c on att.course = c.id
+where ass.sessdate > 1420070400
+	and c.id IN(31586, 30923, 30927, 31620, 31831, 31816, 32074, 31600, 31746, 32416, 32606, 31678, 32081, 32082, 32084)
+	order by ass.sessdate desc';
+	
+	return $DB->get_records_sql($sql, array());
+}
+
+/* functions for mail.php */
+
+function get_sessionid($courseid) {
+    global $DB;
+	$today = date();
+			
+	$sql = 'SELECT ass.sessdate, ass.id AS ass_id, cm.id AS cmo_id
+	FROM mdl_course c
+    JOIN mdl_course_modules cm ON cm.course = c.id
+    JOIN mdl_attendance_sessions ass ON ass.attendanceid = cm.instance
+    where c.idnumber = ?
+    and ass.sessdate >= ?
+    order by ass.sessdate desc';
+	
+	return $DB->get_records_sql($sql, array($courseid, $today));
+}
+
+function getMyCourses($userid) {
+	global $DB;
+	
+	$sql = 'SELECT c.idnumber, c.shortname
+			FROM {role_assignments} ra, {user} u, {course} c, {context} cxt, {attendance_sessions} ass, {attendance} att
+			WHERE ra.userid = u.id
+			AND ra.contextid = cxt.id
+			and att.id = ass.attendanceid
+			and c.id = att.course
+			AND cxt.instanceid = c.id
+			AND (roleid =12 OR roleid=3)
+			and c.visible = 1
+			and u.id = ?
+			ORDER BY c.idnumber';
+	
+	return $DB->get_records_sql($sql, array($userid));
+}
+
+/*get_module_leader_email($mform_data->courseid, $mform_data->day);*/
+function get_module_leader_email($courseid) {
+    global $DB;
+	// query works in MySQL Workbench
+	$sql = 'SELECT DISTINCT u.email, u.firstname, u.lastname
+			FROM {role_assignments} ra, {user} u, {course} c, {context} cxt, {attendance_sessions} ass, {attendance} att
+			WHERE ra.userid = u.id
+			AND ra.contextid = cxt.id
+			and att.id = ass.attendanceid
+			and c.id = att.course
+			AND cxt.instanceid = c.id
+			AND (roleid =12 OR roleid=3)
+			and c.idnumber = ?';
+	
+	return $DB->get_records_sql($sql, array($courseid));
+}
+
+/* functions for register.php */
 
 function get_course_details($courseid) {
     global $DB;
@@ -131,3 +207,53 @@ function get_course_details($courseid) {
 	
 	return $DB->get_records_sql($sql, array($courseid));
 }
+
+function getSessions($today, $userid) {
+    global $DB;
+		
+		$sql = 'select ass.sessdate
+			FROM {role_assignments} ra, {user} u, {course} c, {context} cxt, {attendance_sessions} ass, {attendance} att
+			WHERE ra.userid = u.id
+			AND ra.contextid = cxt.id
+			and att.id = ass.attendanceid
+			and c.id = att.course
+			AND cxt.instanceid = c.id
+			AND (roleid =12 OR roleid=3)
+			and c.visible = 1
+			and ass.sessdate >= ?
+			and u.id = ?
+			ORDER BY ass.sessdate desc';
+
+	return $DB->get_records_sql($sql, array($today, $userid));
+}
+
+function getCourseSessions($course_id, $today) {
+    global $DB;
+		
+	$sql = 'SELECT ass.sessdate
+		FROM {attendance} att
+		JOIN {attendance_sessions} ass ON ass.attendanceid = att.id
+		WHERE att.course = ?
+		AND ass.sessdate >= ?
+		ORDER BY ass.sessdate';
+
+	return $DB->get_records_sql($sql, array($course_id, $today));
+}
+
+function get_register($courseid, $sessdate) {
+    global $DB;
+	$sql = 'select u.username, u.firstname, u.lastname, ass.sessdate
+			FROM {role_assignments} ra, {user} u, {course} c, {context} cxt, {attendance_sessions} ass, {attendance} att
+			WHERE ra.userid = u.id
+			AND ra.contextid = cxt.id
+			and att.id = ass.attendanceid
+			and c.id = att.course
+			AND cxt.instanceid = c.id
+			AND (roleid = 5)
+			and c.id = ?
+			and ass.sessdate = ?
+			order by u.lastname, u.firstname';
+
+	return $DB->get_records_sql($sql, array($courseid, $sessdate));
+}
+
