@@ -1,5 +1,7 @@
 <?php
 
+// This file is part of Moodle - http://moodle.org/
+//
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -14,31 +16,27 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Input form for attendance
+ * Attendance - Privacy Subsystem implementation
  *
  * @package    local_attendance
- * @copyright  2017, Oxford Brookes University
+ * @copyright  2018, Oxford Brookes University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
  */
 
-require_once("{$CFG->libdir}/formslib.php");
+namespace local_attendance\privacy;
 
-class jisc_form extends moodleform {
+defined('MOODLE_INTERNAL') || die();
 
-    function definition() {
-        $mform =& $this->_form;
-		
-		$mform->addElement('html', '<h2>' . get_string('attendance_jisc', 'local_attendance') . '</h2>');
+// Privacy Subsystem implementing null_provider
+class provider implements \core_privacy\local\metadata\null_provider {
 
-		$mform->addElement('checkbox', 'pilot_data', get_string('pilot_data', 'local_attendance'));
-
-        $this->add_action_buttons(true, get_string('save', 'local_attendance'));
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     *
+     * @return  string
+     */
+    public static function get_reason() : string {
+        return 'privacy:metadata';
     }
-	
-	function validation($data, $files) {
-		$errors = parent::validation($data, $files); // Ensure we don't miss errors from any higher-level validation
-
-		return $errors;
-	}
 }

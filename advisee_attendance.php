@@ -14,62 +14,64 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Brookes ID - Certificates
+ * Attendance - Advisee attendance
  *
  * @package    local_attendance
- * @copyright  2017, Oxford Brookes University
+ * @copyright  2018, Oxford Brookes University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
 
 require_once('../../config.php');
 require_once('./db_update.php');
-require_once('./attendance_form.php');
-
+require_once('./advisee_attendance_form.php');
 
 require_login();
-$context = context_system::instance();
-require_capability('local/attendance:admin', $context);
 
 $home = new moodle_url('/');
-$url = $home . 'local/attendance/index.php';
-
+$url = $home . 'local/attendance/advisee_attendance.php';
+$advisees = get_academic_advisees($USER->id);
+if (empty($advisees)) {
+	redirect($home);
+}
+$context = context_system::instance();
 
 $PAGE->set_pagelayout('standard');
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_heading($SITE->fullname);
-$PAGE->set_title(get_string('attendance', 'local_attendance') . ' (CSV)');
-
+$PAGE->set_title(get_string('advisee_attendance', 'local_attendance'));
+ 
 $message = '';
 
-$mform = new attendance_form(null, array());
+$parameters = [
+	'advisees' => $advisees
+];
+
+$mform = new advisee_attendance_form(null, $parameters);
 
 if ($mform->is_cancelled()) {
     redirect($home);
 } 
 else if ($mform_data = $mform->get_data()) {
-	$attendances = get_attendance($mform_data->student_number); // Get all for selected student
+	$attendances = get_student_attendance($mform_data->student_number); // Get all for selected student
 	if (empty($attendances)) {
-		$message = get_string('no_students', 'local_attendance');
+		$message = get_string('no_attendance', 'local_attendance');
 	} else {
 		header('Content-Type: text/csv');
 		header('Content-Disposition: attachment;filename=attendance_' . $mform_data->student_number . '.csv');
 		$fp = fopen('php://output', 'w');
-		fputcsv($fp, array('session date','calendar event id', 'course id', 'course name', 'student number','first name', 'last name','acronym','description'));
+		fputcsv($fp, array('Session', 'Description', 'Module', 'Student', 'First name', 'Surname', 'Attendance'));
 
 		foreach ($attendances as $attendance) {
-			// session_date, ass.caleventid, c.idnumber as course_id, c.shortname as course_name, u.username as student_number, u.firstname, u.lastname, ast.acronym, ast.description
 			$fields = array();
-			$fields[0] = date('d-m-Y', $attendance->session_date);
-			$fields[1] = $attendance->caleventid;
-			$fields[2] = $attendance->course_id;
-			$fields[3] = $attendance->course_name;
-			$fields[4] = $attendance->student_number;
-			$fields[5] = $attendance->firstname;
-			$fields[6] = $attendance->lastname;
-			$fields[7] = $attendance->acronym;
-			$fields[8] = $attendance->description;
+			$fields[0] = date('d-m-Y H:m', $attendance->session);
+			$fields[1] = $attendance->description;
+			$fields[2] = $attendance->module;
+			$fields[3] = $attendance->student;
+			$fields[4] = $attendance->firstname;
+			$fields[5] = $attendance->lastname;
+			$fields[6] = $attendance->attendance;
 			fputcsv($fp, $fields);
 		}
 		fclose($fp);

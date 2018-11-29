@@ -14,7 +14,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Attendance - Mail input form
+ * Attendance - Advisee attendance input form
  *
  * @package    local_attendance
  * @copyright  2018, Oxford Brookes University
@@ -22,30 +22,29 @@
  *
  */
 
+
 require_once("{$CFG->libdir}/formslib.php");
 
-class mail_form extends moodleform {
+class advisee_attendance_form extends moodleform {
 
     function definition() {
 		global $USER;
 
-		$mform =& $this->_form;
+        $mform =& $this->_form;
 		
-		$mform->addElement('html', '<h2>' . get_string('mail', 'local_attendance')  . '</h2>');
-		
-		$moduleArray = array();
-		$modules = get_staff_modules($USER->id);
-		foreach($modules as $module) {
-			$moduleArray[$module->id] = $module->shortname;
-		}
-		$mform->addElement('select', 'module_id', get_string('module', 'local_attendance'), $moduleArray);
-				
-        $this->add_action_buttons(true, get_string('send', 'local_attendance'));
-    }
-	
-	function validation($data, $files) {
-		$errors = parent::validation($data, $files); // Ensure we don't miss errors from any higher-level validation
+		$mform->addElement('html', '<h2>' . get_string('advisee_attendance', 'local_attendance')  . '</h2>');
+		$mform->addElement('html', '<p>This report allows you to retrieve attendance data for your academic advisees.</p>');
 
-		return $errors;
-	}
+		$adviseeArray = array();
+		$myAdvisees = $this->_customdata['advisees'];
+		foreach($myAdvisees as $myAdvisee) {
+			$key = $myAdvisee->username;
+			$value = $myAdvisee->firstname . ' ' . $myAdvisee->lastname . ' (' . $myAdvisee->username . ')';
+			$adviseeArray[$key] = $value;
+		}
+		
+		$mform->addElement('select', 'student_number', get_string('student', 'local_attendance'), $adviseeArray);
+
+        $this->add_action_buttons(true, get_string('download', 'local_attendance'));
+    }
 }

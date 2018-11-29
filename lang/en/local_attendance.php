@@ -16,39 +16,41 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Language strings
+ * Attendance - language strings
  *
  * @package    local_attendance
- * @copyright  2017, Oxford Brookes University {@link http://www.brookes.ac.uk/}
+ * @copyright  2018, Oxford Brookes University {@link http://www.brookes.ac.uk/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Attendance reports';
+$string['privacy:metadata'] = 'The Attendance plugin only shows data stored in other locations.';
 
+$string['pluginname'] = 'Attendance';
 
-$string['attendance:admin'] = 'Attendance reports';
+$string['attendance_reports'] = 'Attendance reports';
 
-$string['save'] = 'Download';
-$string['student_number'] = 'Student number';
+$string['download'] = 'Download';
+$string['student'] = 'Student';
 
-$string['attendance'] = 'Attendance records for an individual student';
-$string['attendance_all'] = 'Attendance records for a given date range';
-$string['register_pdf'] = 'Generate attendance register (PDF)';
-$string['attendance_csv'] = 'Attendance report for an individual student';
-$string['att_all_csv'] = 'Attendance report for all students';
-$string['attendance_jisc'] = 'Download attendance data for JISC UDD app';
-$string['pilot_data'] = 'Only attendance data for the modules in the pilot project';
+$string['register'] = 'Get register';
+$string['module_register'] = 'Module register';
+$string['mail'] = 'Email an attendance register link';
+$string['advisee_attendance'] = 'Advisee attendance';
+$string['course_attendance'] = 'Course attendance';
+$string['module_attendance'] = 'Module attendance';
 
+$string['jisc_attendance'] = 'JISC attendance';
+$string['pilot_data'] = 'Only for the modules in the pilot project';
+
+$string['attendance'] = 'Attendance';
 
 $string['date_from'] = 'From';
 $string['date_to'] = 'To';
 $string['invalid_date'] = 'Invalid date.';
-$string['no_attendance'] = 'No attendance records within these dates';
-$string['no_students'] = 'No students match your search';
-$string['register'] = 'Get register';
+$string['no_attendance'] = 'No attendance records';
 $string['no_register'] = 'Sorry, we cannot find that session';
-$string['courseid'] = 'Course id';
+$string['module'] = 'Module';
 $string['day'] = 'Day';
 $string['send'] = 'Send email';
-$string['mail'] = 'Email an attendance register link';
+$string['register_pdf'] = 'Generate attendance register (PDF)';
 ?>

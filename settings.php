@@ -16,10 +16,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Standard lib
+ * Attendance - standard lib
  *
  * @package    local_attendance
- * @copyright  2017, Oxford Brookes University {@link http://www.brookes.ac.uk/}
+ * @copyright  2018, Oxford Brookes University {@link http://www.brookes.ac.uk/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

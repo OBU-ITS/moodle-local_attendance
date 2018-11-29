@@ -14,40 +14,37 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * attendance
+ * Attendance - JISC attendance download
  *
  * @package    local_attendance
- * @copyright  2017, Oxford Brookes University
+ * @copyright  2018, Oxford Brookes University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
 
-
 require_once('../../config.php');
 require_once('./db_update.php');
-require_once('./jisc_form.php');
-
+require_once('./jisc_attendance_form.php');
 
 require_login();
 $context = context_system::instance();
 require_capability('local/attendance:admin', $context);
 
 $home = new moodle_url('/');
-$url = $home . 'local/attendance/index.php';
-
+$url = $home . 'local/attendance/jisc_attendance.php';
 
 $PAGE->set_pagelayout('standard');
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_heading($SITE->fullname);
-$PAGE->set_title(get_string('attendance_jisc', 'local_attendance') . ' (CSV)');
+$PAGE->set_title(get_string('jisc_attendance', 'local_attendance') . ' (CSV)');
 
 $message = '';
 
-$mform = new jisc_form(null, array());
+$mform = new jisc_attendance_form(null, array());
 
 if ($mform->is_cancelled()) {
-    redirect($url);
+    redirect($home);
 } 
 else if ($mform_data = $mform->get_data()) {
 	if($mform_data->pilot_data == 0){
@@ -55,7 +52,6 @@ else if ($mform_data = $mform->get_data()) {
 	} else {
 		$attendanceJisc = get_pilot_jisc_data(); // Get pilot data only 
 	}
-	
 	
 	if (empty($attendanceJisc)) {
 		$message = get_string('no_attendance', 'local_attendance');
@@ -67,10 +63,9 @@ else if ($mform_data = $mform->get_data()) {
 			header('Content-Disposition: attachment;filename=attendance_jisc_udd_pilot_data.csv');
 		}
 		
-		
 		$fp = fopen('php://output', 'w');
-		fputcsv($fp, array('event_id', 'event_name', 'event_description','student_id', 'staff_id', 'event_type_id', 'event_max_count','mod_instance_id', 'start_time', 'end_time', 'event_attended',
-    'attendance_late','timestamp'));
+		fputcsv($fp, array('event_id', 'event_name', 'event_description', 'student_id', 'staff_id', 'event_type_id', 'event_max_count',
+			'mod_instance_id', 'start_time', 'end_time', 'event_attended', 'attendance_late', 'timestamp'));
 
 		foreach ($attendanceJisc as $attendance) {
 			$fields = array();
@@ -88,7 +83,6 @@ else if ($mform_data = $mform->get_data()) {
 			$fields[11] = $attendance->attendance_late;
 			$fields[12] = date('d-m-Y h:m', $attendance->timestamp);
 			
-			
 			fputcsv($fp, $fields);
 		}
 		fclose($fp);
@@ -96,6 +90,7 @@ else if ($mform_data = $mform->get_data()) {
 		exit();
 	}
 }
+
 echo $OUTPUT->header();
 	 
 if ($message) {
@@ -104,7 +99,7 @@ if ($message) {
 else {
     $mform->display();
 }
-//echo $mform_data->date_from . ' '. $mform_data->date_to;
+
 echo $OUTPUT->footer();
 
 exit();

@@ -16,66 +16,67 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Brookes ID - Provide left hand navigation links
+ * Attendance - Provide left hand navigation links
  *
  * @package    local_attendance
- * @copyright  2017, Oxford Brookes University
+ * @copyright  2018, Oxford Brookes University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+require_once($CFG->dirroot . '/local/attendance/db_update.php');
+
 function local_attendance_extend_navigation($navigation) {
+	global $USER, $PAGE;
 	
-	if (!isloggedin() || isguestuser() || !has_capability('local/attendance:admin', context_system::instance())) {
+	if (!isloggedin() || isguestuser()) {
 		return;
 	}
-	
-	// Find the 'brookesid' node
+
+	$advisees = get_academic_advisees($USER->id);
+	if (!is_siteadmin and empty($advisees) and (!$PAGE->course or ($PAGE->course->id == 1)
+		or (!has_capability('mod/attendance:viewreports', context_course::instance($PAGE->course->id))
+			and (!has_capability('mod/attendance:takeattendances', context_course::instance($PAGE->course->id)) or (substr($PAGE->course->idnumber, 6, 1) != '.'))))) {
+		return;
+	}
+    
+	// Find the 'Attendance reports' node
 	$nodeParent = $navigation->find(get_string('attendance', 'local_attendance'), navigation_node::TYPE_SYSTEM);
 	
-	// If necessary, add the 'brookesid' node to 'home'
+	// If necessary, add the 'Attendance reports' node to 'home'
 	if (!$nodeParent) {
 		$nodeHome = $navigation->children->get('1')->parent;
 		if ($nodeHome) {
-			$nodeParent = $nodeHome->add(get_string('attendance:admin', 'local_attendance'), null, navigation_node::TYPE_SYSTEM);
+			$nodeParent = $nodeHome->add(get_string('attendance_reports', 'local_attendance'), null, navigation_node::TYPE_SYSTEM);
 		}
 	}
 	
-	$node = $nodeParent->add(get_string('mail', 'local_attendance'), '/local/attendance/mail.php');
-	$node = $nodeParent->add(get_string('attendance_all', 'local_attendance'), '/local/attendance/att_all_csv.php');
-	$node = $nodeParent->add(get_string('attendance', 'local_attendance'), '/local/attendance/attendance_csv.php');
-	$node = $nodeParent->add(get_string('attendance_jisc', 'local_attendance'), '/local/attendance/jisc_csv.php');
-	$node = $nodeParent->add(get_string('register', 'local_attendance'), '/local/attendance/register.php');
+//	$node = $nodeParent->add(get_string('module_register', 'local_attendance'), '/local/attendance/module_register.php');
+//	$node = $nodeParent->add(get_string('mail', 'local_attendance'), '/local/attendance/mail.php');
+		
+	if (is_siteadmin()) {
+		$node = $nodeParent->add(get_string('jisc_attendance', 'local_attendance'), '/local/attendance/jisc_attendance.php');
+	}
+
+	if (!empty($advisees)) {
+		$node = $nodeParent->add(get_string('advisee_attendance', 'local_attendance'), '/local/attendance/advisee_attendance.php');
+	}
+
+	if (!$PAGE->course or ($PAGE->course->id == 1)) {
+		return;
+	}
+
+	if (has_capability('mod/attendance:viewreports', context_course::instance($PAGE->course->id))) {
+		if (substr($PAGE->course->idnumber, 6, 1) != '.') { // Programme
+			$node = $nodeParent->add(get_string('course_attendance', 'local_attendance'), new moodle_url('/local/attendance/course_attendance.php', array('id' => $PAGE->course->id)));
+		} else { // Module
+			$node = $nodeParent->add(get_string('module_attendance', 'local_attendance'), new moodle_url('/local/attendance/module_attendance.php', array('id' => $PAGE->course->id)));
+		}
+	}
+
+	if ((substr($PAGE->course->idnumber, 6, 1) == '.') && has_capability('mod/attendance:takeattendances', context_course::instance($PAGE->course->id))) { // Only for modules
+		$node = $nodeParent->add(get_string('register', 'local_attendance'), new moodle_url('/local/attendance/register.php', array('id' => $PAGE->course->id)));
+	}
 }
 
-function local_attendance_extend_settings_navigation($settingsnav, $context) {
-    global $PAGE;
-
-    // Only add this settings item on non-site course pages.
-    if (!$PAGE->course or ($PAGE->course->id == 1)) {
-        return;
-    }
-    
-    // Only let users with the appropriate capability see this settings item.
-     if (!has_capability('mod/attendance:takeattendances', context_course::instance($PAGE->course->id))) {
-        return;
-    }
-    
-    if ($nodeParent = $settingsnav->find('courseadmin', navigation_node::TYPE_COURSE)) {
-        $title = get_string('register', 'local_attendance');
-        $url = new moodle_url('/local/attendance/course_register.php', array('id' => $PAGE->course->id));
-        $node = navigation_node::create(
-            $title,
-            $url,
-            navigation_node::NODETYPE_LEAF,
-            'register',
-            'register',
-            new pix_icon('t/addcontact', $title)
-        );
-
-        if ($PAGE->url->compare($url, URL_MATCH_BASE)) {
-            $node->make_active();
-        }
-
-        $nodeParent->add_node($node);
-    }
+function local_attendance_extend_settings_navigation($navigation, $context) {
 }

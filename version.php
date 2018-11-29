@@ -19,13 +19,13 @@
  * Version info
  *
  * @package    local_attendance
- * @copyright  2017, Oxford Brookes University {@link http://www.brookes.ac.uk/}
+ * @copyright  2018, Oxford Brookes University {@link http://www.brookes.ac.uk/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2017101200;
+$plugin->version = 2018102500;
 
 $plugin->requires = 2012120301;//Optional - minimum version number of Moodle that this plugin requires
 //(Moodle 1.9 = 2007101509; Moodle 2.0 = 2010112400; Moodle 2.1 = 2011070100; Moodle 2.2 = 2011120100; Moodle 2.4 = 2012120301)
@@ -35,5 +35,5 @@ $plugin->component = 'local_attendance'; // Full name of the plugin (used for di
 $plugin->maturity = MATURITY_STABLE;//Optional - how stable the plugin is:
 //MATURITY_ALPHA, MATURITY_BETA, MATURITY_RC, MATURITY_STABLE (Moodle 2.0 and above)
 
-$plugin->release = 'v1.1.0'; //Optional - Human-readable version name
+$plugin->release = 'v1.2.0'; //Optional - Human-readable version name
 ?>

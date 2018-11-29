@@ -14,10 +14,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Brookes ID - Certificates
+ * Attendance - Register for given module
  *
  * @package    local_attendance
- * @copyright  2017, Oxford Brookes University
+ * @copyright  2018, Oxford Brookes University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -27,29 +27,37 @@ require_once($CFG->libdir . '/pdflib.php');
 require_once('./db_update.php');
 require_once('./register_form.php');
 
-
 require_login();
-$context = context_system::instance();
-require_capability('local/attendance:admin', $context);
+
+$course = $DB->get_record('course', array('id' => required_param('id', PARAM_INT)), '*', MUST_EXIST);
+context_helper::preload_course($course->id);
+$context = context_course::instance($course->id, MUST_EXIST);
+require_capability('mod/attendance:takeattendances', $context);
 
 $home = new moodle_url('/');
-$url = $home . 'local/attendance/index.php';
+$url = $home . 'local/attendance/register.php?id=' . $course->id;
 
 $PAGE->set_pagelayout('standard');
 $PAGE->set_url($url);
+$PAGE->set_course($course);
 $PAGE->set_context($context);
 $PAGE->set_heading($SITE->fullname);
-$PAGE->set_title(get_string('attendance', 'local_attendance'));
+$PAGE->set_title(get_string('register_pdf', 'local_attendance'));
 
 $message = '';
 
-$mform = new register_form(null, array());
+$today = (floor(time() / 86400)) * 86400; // The timestamp at the start of the day
+$parameters = [
+	'id' => $course->id,
+	'sessions' => get_sessions($course->id, $today)
+];
+
+$mform = new register_form(null, $parameters);
 
 if ($mform->is_cancelled()) {
     redirect($home);
 } else if ($mform_data = $mform->get_data()) {
-	$registers = get_register($mform_data->courseid, $mform_data->sessdate); // Get all attendees for selected session
-	$coursedetails = get_course_details($mform_data->courseid);
+	$registers = get_register($course->id, $mform_data->sessdate); // Get all attendees for selected session
 	if (empty($registers)) {
 		$message = get_string('no_register', 'local_attendance');
 	} else {
@@ -70,12 +78,9 @@ if ($mform->is_cancelled()) {
 		$pdf->setFooterMargin(10);
 		$pdf->setFooterFont(array(PDF_FONT_NAME_MAIN, '', 8));
 
-		$studentnumber = 0;
-		$sessdate = $mform_data->sessdate;
-		$courseid = $mform_data->courseid;
+		$module = get_module_names($course->id);
 		
-		output($pdf, $registers, $coursedetails, $courseid, $sessdate); // Clear the chamber
-		
+		output($pdf, $module, $registers, $mform_data->sessdate);
 		
 		exit();
 	}	 
@@ -95,33 +100,29 @@ echo $OUTPUT->footer();
 exit();
 
 
-function output($pdf, $registers, $coursedetails, $courseid, $sessdate) {
-
+function output($pdf, $module, $registers, $sessdate) {
+	
 	$pdf->AddPage();
 		
 	$pdf->SetTextColor(255,255,255);
 	$pdf->SetFillColor(255,255,255);
 	$pdf->SetFont('helvetica', 'R', 24);
+	$pdf->SetPrintHeader(false);
 	$pdf->Cell(0, 0, 'Brookes Attendance Register', 0, 1, 'C', 1);
 		
 	$pdf->SetFont('helvetica', 'R', 10);
 	$pdf->Ln(6);
 	$pdf->SetTextColor(0,0,0);
-	$pdf->SetPrintHeader(false);
-	//$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
 	$pdf->SetMargins(PDF_MARGIN_LEFT, 10, PDF_MARGIN_RIGHT, true);
-
 	
 	$c = '';
-	$c .= '<p style="text-align: center"><img src="/pix/logo-brookes.png" align="center" width="100"></p>';
+	$c .= '<p style="text-align: center"><img src="./images/logo-brookes.png" align="center" width="100">';
 	
-	$c .= '<h2>Register: ';
-	foreach ($coursedetails as $coursedetail) {
-		$c .=  $coursedetail->idnumber  . ' - ' . $coursedetail->shortname  .'</h2>';
-	}
+	$c .= '<h2>Register</h2>';
+	$c .= '<h3>' . $module['Fullname'] . '</h3>';
 	
 	$first_value = reset($registers);
-	$c .= '<h3>' . date('d/m/y h:i', $first_value->sessdate) . '</h3>';
+	$c .= '<p>' . date('d/m/y H:i', $first_value->sessdate) . '</p>';
 		
 	$c .= '<table border="0" cellspacing="0" cellpadding="3"><thead>';
 	
@@ -129,29 +130,22 @@ function output($pdf, $registers, $coursedetails, $courseid, $sessdate) {
 	
 	$c .= '</tr></thead><tbody>';
 	$counter = 0;
-	foreach($registers as $register) {
+	foreach ($registers as $register) {
 		$counter ++;
-		//$c .= '<tr><td colspan="6">debug</td></tr>';
 		if ($counter % 2 == 0) {
 			$c .= '<tr>';
 		} else {
 			$c .= '<tr bgcolor="#eeeeee">';
 		}
-			//$c .= '<td width="5%">' . $counter . '</td>';
-			//$c .= '<td>' . date('d/m/y h:i', $register->sessdate) . '</td>';
-			$c .= '<td align="left">' . $register->firstname . ' ' . $register->lastname . '</td>';
-			$c .= '<td align="left">' . $register->username . '</td>';
-			$c .= '<td>&nbsp;</td>';
-			$c .= '</tr>';
-		}
-		
+		$c .= '<td align="left">' . $register->firstname . ' ' . $register->lastname . '</td>';
+		$c .= '<td align="left">' . $register->username . '</td>';
+		$c .= '<td>&nbsp;</td>';
+		$c .= '</tr>';
+	}
 	
 	$c .= '</tbody></table>';
 	$c .= '<p>Total number of students: ' . $counter . '</p>';
-	//$c .= '<br pagebreak="true"/>';
-	
-	
 	
 	$pdf->writeHTML($c);
-	$pdf->Output('register_' . $mform_data->courseid . '.pdf');
+	$pdf->Output('register_' . $module['IDnumber'] . '.pdf');
 }

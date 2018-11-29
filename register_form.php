@@ -14,10 +14,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Input form for attendance
+ * Attendance - Register input form
  *
  * @package    local_attendance
- * @copyright  2017, Oxford Brookes University
+ * @copyright  2018, Oxford Brookes University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -28,40 +28,27 @@ class register_form extends moodleform {
 
     function definition() {
         $mform =& $this->_form;
-		
+
 		$mform->addElement('html', '<h2>' . get_string('register', 'local_attendance')  . '</h2>');
 
-		global $USER;
-		$userid = $USER->id;
-		$myCourseIds = array();
-		$selectArray = array();
-		$myCourseIds = getMyCourses($userid);
-		foreach($myCourseIds as $myCourseId) {
-			$key = $myCourseId->idnumber;
-			$value = $myCourseId->shortname;
-			$courseArray[$key] = $value;
-		}
-		$today = date();
-		$myCourseSessions = getSessions($today, $userid);
-		foreach($myCourseSessions as $myCourseSession) {
-			$key = $myCourseSession->sessdate;
-			if($key >= $today) {
-				$value = date("d M y, h:i", $myCourseSession->sessdate);
-				$sessionArray[$key] = $value;
-				//echo 'key:' . $key . ' and value: ' . $value . '<br>';
-				//echo 'user id: '. $userid;
+		$mform->addElement('hidden', 'id', $this->_customdata['id']);
+		$mform->setType('id', PARAM_RAW);
+
+		$sessionArray = array();
+		foreach ($this->_customdata['sessions'] as $key => $value) {
+			if (empty($value)) {
+			   unset($playerlist[$key]);
 			}
 		}
-		$mform->addElement('select', 'courseid', get_string('courseid', 'local_attendance'), $courseArray);
+		if (empty($this->_customdata['sessions'])) {
+			 echo '<div style="z-index: 1; position: relative; left: 40%; top: 10em; text-align: center; width: 20em; background-color: #ffffcc; color: #000;">' . get_string('no_register', 'local_attendance') . '</div>';
+		} else {
+			foreach($this->_customdata['sessions'] as $session) {
+				$sessionArray[$session->sessdate] = date("d M y, H:i", $session->sessdate);
+			}
+			$mform->addElement('select', 'sessdate', get_string('day', 'local_attendance'), $sessionArray);
+		}
 		
-		$mform->addElement('select', 'sessdate', get_string('day', 'local_attendance'), $sessionArray);
-		
-        $this->add_action_buttons(true, get_string('save', 'local_attendance'));
+        $this->add_action_buttons(true, get_string('download', 'local_attendance'));
     }
-	
-	function validation($data, $files) {
-		$errors = parent::validation($data, $files); // Ensure we don't miss errors from any higher-level validation
-
-		return $errors;
-	}
 }

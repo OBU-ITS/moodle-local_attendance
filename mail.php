@@ -14,10 +14,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Brookes ID - Certificates
+ * Attendance - Mail
  *
  * @package    local_attendance
- * @copyright  2017, Oxford Brookes University
+ * @copyright  2018, Oxford Brookes University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -32,7 +32,7 @@ $context = context_system::instance();
 require_capability('local/attendance:admin', $context);
 
 $home = new moodle_url('/');
-$url = $home . 'local/attendance/index.php';
+$url = $home . 'local/attendance/mail.php';
 
 $PAGE->set_pagelayout('standard');
 $PAGE->set_url($url);
@@ -44,33 +44,34 @@ $message = '';
 $txt = '';
 
 $mform = new mail_form(null, array());
-//use U08700.234933 as sample course 
 if ($mform->is_cancelled()) {
     redirect($home);
 } else if ($mform_data = $mform->get_data()) {
-	global $USER;
-	$sessionids = get_sessionid($mform_data->courseid);
-	$recipients = get_module_leader_email($mform_data->courseid);
-	$to = '';
-	/*=== begin DEBUG params ===*/
-	//$to = 'yaburrow@brookes.ac.uk';	
-	//$attid = 419676;
-	//$sessionid = 1352;
-	/*==== end DEBUG params ====*/
-	
+	$module = get_module_names($mform_data->module_id);
+	$session_ids = get_session_ids($mform_data->module_id, date());
 
-	foreach($recipients as $recipient) {
-		$to .= $recipient->email . ', ';
+	$to = '';
+	$recipients = get_module_staff_emails($mform_data->module_id);
+	foreach ($recipients as $recipient) {
+		if ($to != '') {
+			$to .= ', ';
+		}
+		$to .= $recipient->email;
 	}
-	$subject = "Attendance registers for ". $mform_data->courseid ;
-	$txt = '<html><body>Hi ';
-	foreach($recipients as $recipient) {
-		$txt .= $recipient->firstname . ', ';
+	$subject = "Attendance registers for ". $module['Shortname'];
+	$txt = '';
+	foreach ($recipients as $recipient) {
+		if ($txt == '') {
+			$txt = '<html><body>Hi ';
+		} else {
+			$txt .= ', ';
+		}
+		$txt .= $recipient->firstname;
 	}
-	$txt .= '<br>&nbsp;<br>Here is a list of links to the attendance registers for the module &nbsp;'. $mform_data->courseid .'<br>&nbsp;<br>';
-	foreach($sessionids as $sessionid) {
-		$sessdate = $sessionid->sessdate;
-		$txt .= '<a href="' . $home. '/mod/attendance/take.php?id='. $sessionid->cmo_id . '&sessionid='. $sessionid->ass_id .'&grouptype=0&perpage=0">'. $mform_data->courseid . ' on '. date("d-m-Y h:i", $sessdate) .'</a><br/>';
+	$txt .= '<br>&nbsp;<br>Here is a list of links to the attendance registers for the module &nbsp;'. $shortname .'<br>&nbsp;<br>';
+	foreach ($session_ids as $session_id) {
+		$sessdate = $session_id->sessdate;
+		$txt .= '<a href="' . $home. '/mod/attendance/take.php?id='. $session_id->cmo_id . '&sessionid='. $session_id->ass_id .'&grouptype=0&perpage=0">'. $module['Shortname'] . ' on '. date("d-m-Y h:i", $sessdate) .'</a><br/>';
 	}
 	$txt .= '</body></html>';
 	$headers = "From: moodle@brookes.ac.uk" . "\r\n";
@@ -91,8 +92,6 @@ if ($message) {
 else {
     $mform->display();
 }
-
-
 
 echo $OUTPUT->footer();
 

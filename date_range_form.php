@@ -14,61 +14,44 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Input form for attendance
+ * Attendance - Date range input form
  *
  * @package    local_attendance
- * @copyright  2017, Oxford Brookes University
+ * @copyright  2018, Oxford Brookes University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
 
-
 require_once("{$CFG->libdir}/formslib.php");
 
-class attendance_form extends moodleform {
+class date_range_form extends moodleform {
 
     function definition() {
         $mform =& $this->_form;
 		
-		$mform->addElement('html', '<h2>' . get_string('attendance', 'local_attendance')  . '</h2>');
-		$mform->addElement('html', '<p>This report allows you to retrieve attendance data for your academic advisees.</p>');
+		$mform->addElement('html', '<h2>' . $this->_customdata['title'] . '</h2>');
 
-		//$mform->addElement('text', 'student_number', get_string('student_number', 'local_attendance'));
-		global $USER;
-		$userid = $USER->id;
-		$myAdvisees = array();
-		$adviseeArray = array();
-		$myAdvisees = get_academic_advisees($userid);
-		foreach($myAdvisees as $myAdvisee) {
-			$key = $myAdvisee->username;
-			$value = $myAdvisee->firstname . ' ' . $myAdvisee->lastname . ' (' . $myAdvisee->username . ')';
-			$adviseeArray[$key] = $value;
-			//DEBUG
-			//echo 'key:' . $key . ' and value: ' . $value . '<br>';
-			//echo 'user id: '. $userid;
-			//echo $myAdvisee->username . $myAdvisee->lastname . $myAdvisee->firstname . '<br/>';
-		}
-		//DEBUG
-		//$mform->addElement('text', 'userid', 'user id');
-		//$mform->setDefault('userid', $userid);
-		
-		$mform->addElement('select', 'student_number', get_string('student_number', 'local_attendance'), $adviseeArray);
+		$mform->addElement('hidden', 'id', $this->_customdata['id']);
+		$mform->setType('id', PARAM_RAW);
 
-        $this->add_action_buttons(true, get_string('save', 'local_attendance'));
+		$mform->addElement('date_selector', 'date_from', get_string('date_from', 'local_attendance'));
+		$mform->addElement('date_selector', 'date_to', get_string('date_to', 'local_attendance'));
+
+        $this->add_action_buttons(true, get_string('download', 'local_attendance'));
     }
 	
 	function validation($data, $files) {
 		$errors = parent::validation($data, $files); // Ensure we don't miss errors from any higher-level validation
 		
 		// Do our own validation and add errors to array
-		/*foreach ($data as $key => $value) {
+		foreach ($data as $key => $value) {
 			if (($key == 'date_from') && ($value > strtotime('today midnight'))) {
 				$errors['date_from'] = get_string('invalid_date', 'local_attendance');
 			} else if (($key == 'date_to') && ($value < $data['date_from'])) {
 				$errors['date_to'] = get_string('invalid_date', 'local_attendance');
 			}
 		}
-		*/
+		
 		return $errors;
 	}
 }
