@@ -33,7 +33,7 @@ function local_attendance_extend_navigation($navigation) {
 	}
 
 	$advisees = get_academic_advisees($USER->id);
-	if (!is_siteadmin and empty($advisees) and (!$PAGE->course or ($PAGE->course->id == 1)
+	if (!is_siteadmin() and empty($advisees) and (!$PAGE->course or ($PAGE->course->id == 1)
 		or (!has_capability('mod/attendance:viewreports', context_course::instance($PAGE->course->id))
 			and (!has_capability('mod/attendance:takeattendances', context_course::instance($PAGE->course->id)) or (substr($PAGE->course->idnumber, 6, 1) != '.'))))) {
 		return;
