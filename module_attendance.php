@@ -34,7 +34,7 @@ $context = context_course::instance($course->id, MUST_EXIST);
 require_capability('mod/attendance:viewreports', $context);
 
 $home = new moodle_url('/');
-if (substr($course->idnumber, 6, 1) != '.') { // Check that it's a module
+if (strpos($course->idnumber, '.') === false) { // Check that it's a module
 	redirect($home);
 }
 $url = $home . 'local/attendance/module_attendance.php?id=' . $course->id;

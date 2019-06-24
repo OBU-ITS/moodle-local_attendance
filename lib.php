@@ -35,7 +35,7 @@ function local_attendance_extend_navigation($navigation) {
 	$advisees = get_academic_advisees($USER->id);
 	if (!is_siteadmin() and empty($advisees) and (!$PAGE->course or ($PAGE->course->id == 1)
 		or (!has_capability('mod/attendance:viewreports', context_course::instance($PAGE->course->id))
-			and (!has_capability('mod/attendance:takeattendances', context_course::instance($PAGE->course->id)) or (substr($PAGE->course->idnumber, 6, 1) != '.'))))) {
+			and (!has_capability('mod/attendance:takeattendances', context_course::instance($PAGE->course->id)) or (strpos($PAGE->course->idnumber, '.') === false))))) {
 		return;
 	}
     
@@ -66,14 +66,14 @@ function local_attendance_extend_navigation($navigation) {
 	}
 
 	if (has_capability('mod/attendance:viewreports', context_course::instance($PAGE->course->id))) {
-		if (substr($PAGE->course->idnumber, 6, 1) != '.') { // Programme
+		if (strpos($PAGE->course->idnumber, '.') === false) { // Programme
 			$node = $nodeParent->add(get_string('course_attendance', 'local_attendance'), new moodle_url('/local/attendance/course_attendance.php', array('id' => $PAGE->course->id)));
 		} else { // Module
 			$node = $nodeParent->add(get_string('module_attendance', 'local_attendance'), new moodle_url('/local/attendance/module_attendance.php', array('id' => $PAGE->course->id)));
 		}
 	}
 
-	if ((substr($PAGE->course->idnumber, 6, 1) == '.') && has_capability('mod/attendance:takeattendances', context_course::instance($PAGE->course->id))) { // Only for modules
+	if ((strpos($PAGE->course->idnumber, '.') !== false) && has_capability('mod/attendance:takeattendances', context_course::instance($PAGE->course->id))) { // Only for modules
 		$node = $nodeParent->add(get_string('register', 'local_attendance'), new moodle_url('/local/attendance/register.php', array('id' => $PAGE->course->id)));
 	}
 }
