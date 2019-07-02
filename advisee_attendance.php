@@ -17,7 +17,7 @@
  * Attendance - Advisee attendance
  *
  * @package    local_attendance
- * @copyright  2018, Oxford Brookes University
+ * @copyright  2019, Oxford Brookes University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -29,13 +29,16 @@ require_once('./advisee_attendance_form.php');
 require_login();
 
 $home = new moodle_url('/');
-$url = $home . 'local/attendance/advisee_attendance.php';
 $advisees = get_academic_advisees($USER->id);
 if (empty($advisees)) {
 	redirect($home);
 }
-$context = context_system::instance();
 
+$dir = $home . 'local/attendance/';
+$url = $dir . 'advisee_attendance.php';
+$back = $dir . 'menu.php';
+
+$context = context_system::instance();
 $PAGE->set_pagelayout('standard');
 $PAGE->set_url($url);
 $PAGE->set_context($context);
@@ -51,7 +54,7 @@ $parameters = [
 $mform = new advisee_attendance_form(null, $parameters);
 
 if ($mform->is_cancelled()) {
-    redirect($home);
+    redirect($back);
 } 
 else if ($mform_data = $mform->get_data()) {
 	$attendances = get_student_attendance($mform_data->student_number); // Get all for selected student

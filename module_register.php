@@ -17,7 +17,7 @@
  * Attendance - Register for a selected module
  *
  * @package    local_attendance
- * @copyright  2018, Oxford Brookes University
+ * @copyright  2019, Oxford Brookes University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -27,14 +27,18 @@ require_once($CFG->libdir . '/pdflib.php');
 require_once('./db_update.php');
 require_once('./module_register_form.php');
 
-
 require_login();
-$context = context_system::instance();
-require_capability('local/attendance:admin', $context);
 
 $home = new moodle_url('/');
-$url = $home . 'local/attendance/module_register.php';
+if (!is_siteadmin) {
+	redirect($home);
+}
 
+$dir = $home . 'local/attendance/';
+$url = $dir . 'module_register.php';
+$back = $dir . 'menu.php';
+
+$context = context_system::instance();
 $PAGE->set_pagelayout('standard');
 $PAGE->set_url($url);
 $PAGE->set_context($context);
@@ -46,7 +50,7 @@ $message = '';
 $mform = new module_register_form(null, array());
 
 if ($mform->is_cancelled()) {
-    redirect($home);
+    redirect($back);
 } else if ($mform_data = $mform->get_data()) {
 	$module = get_module_names($mform_data->module_id);
 	$registers = get_register($mform_data->module_id, $mform_data->sessdate); // Get all attendees for selected session

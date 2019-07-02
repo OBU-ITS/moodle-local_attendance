@@ -17,7 +17,7 @@
  * Attendance - Course attendance
  *
  * @package    local_attendance
- * @copyright  2018, Oxford Brookes University
+ * @copyright  2019, Oxford Brookes University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -37,7 +37,10 @@ $home = new moodle_url('/');
 if (strpos($course->idnumber, '.') !== false) { // Check that it's not a module
 	redirect($home);
 }
-$url = $home . 'local/attendance/course_attendance.php?id=' . $course->id;
+
+$dir = $home . 'local/attendance/';
+$url = $dir . 'course_attendance.php?id=' . $course->id;
+$back = $dir . 'menu.php';
 
 $PAGE->set_pagelayout('standard');
 $PAGE->set_url($url);
@@ -56,7 +59,7 @@ $parameters = [
 $mform = new date_range_form(null, $parameters);
 
 if ($mform->is_cancelled()) {
-    redirect($home);
+    redirect($back);
 } 
 else if ($mform_data = $mform->get_data()) {
 	$attendances = get_course_attendance($course->id, $mform_data->date_from, $mform_data->date_to); // Get all for selected dates

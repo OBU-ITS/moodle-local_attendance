@@ -17,7 +17,7 @@
  * Attendance - Register for given module
  *
  * @package    local_attendance
- * @copyright  2018, Oxford Brookes University
+ * @copyright  2019, Oxford Brookes University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -35,7 +35,9 @@ $context = context_course::instance($course->id, MUST_EXIST);
 require_capability('mod/attendance:takeattendances', $context);
 
 $home = new moodle_url('/');
-$url = $home . 'local/attendance/register.php?id=' . $course->id;
+$dir = $home . 'local/attendance/';
+$url = $dir . 'register.php?id=' . $course->id;
+$back = $dir . 'menu.php';
 
 $PAGE->set_pagelayout('standard');
 $PAGE->set_url($url);
@@ -55,7 +57,7 @@ $parameters = [
 $mform = new register_form(null, $parameters);
 
 if ($mform->is_cancelled()) {
-    redirect($home);
+    redirect($back);
 } else if ($mform_data = $mform->get_data()) {
 	$registers = get_register($course->id, $mform_data->sessdate); // Get all attendees for selected session
 	if (empty($registers)) {
