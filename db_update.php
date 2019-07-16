@@ -39,7 +39,7 @@ function get_course_attendance($course_id, $date_from, $date_to) {
 		JOIN {attendance_statuses} ast ON ast.id = alg.statusid
 		JOIN {course} c ON c.id = att.course
 		WHERE e.courseid = ?
-			AND (e.enrol = "database" OR e.enrol = "databaseextended")
+			AND (e.enrol = "database" OR e.enrol = "databaseextended" OR e.enrol = "lmb")
 			AND ass.sessdate >= ?
 			AND ass.sessdate <= ?
 		ORDER BY c.shortname, ass.sessdate, u.username';
