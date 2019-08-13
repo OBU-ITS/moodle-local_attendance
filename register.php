@@ -37,21 +37,27 @@ require_capability('mod/attendance:takeattendances', $context);
 $home = new moodle_url('/');
 $dir = $home . 'local/attendance/';
 $url = $dir . 'register.php?id=' . $course->id;
-$back = $dir . 'menu.php';
+$back = $dir . 'menu.php?id=' . $course->id;
 
 $PAGE->set_pagelayout('standard');
 $PAGE->set_url($url);
 $PAGE->set_course($course);
 $PAGE->set_context($context);
-$PAGE->set_heading($SITE->fullname);
+$PAGE->set_heading($course->fullname);
 $PAGE->set_title(get_string('register_pdf', 'local_attendance'));
 
 $message = '';
 
 $today = (floor(time() / 86400)) * 86400; // The timestamp at the start of the day
+$sessions = get_sessions($course->id, $today)
+$sessionArray = array();
+foreach($sessions as $session) {
+	$sessionArray[$session->sessdate] = date("d M y, H:i", $session->sessdate);
+}
+
 $parameters = [
 	'id' => $course->id,
-	'sessions' => get_sessions($course->id, $today)
+	'sessions' => $sessionArray
 ];
 
 $mform = new register_form(null, $parameters);

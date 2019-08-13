@@ -40,13 +40,13 @@ if (strpos($course->idnumber, '.') !== false) { // Check that it's not a module
 
 $dir = $home . 'local/attendance/';
 $url = $dir . 'course_attendance.php?id=' . $course->id;
-$back = $dir . 'menu.php';
+$back = $dir . 'menu.php?id=' . $course->id;
 
 $PAGE->set_pagelayout('standard');
 $PAGE->set_url($url);
 $PAGE->set_course($course);
 $PAGE->set_context($context);
-$PAGE->set_heading($SITE->fullname);
+$PAGE->set_heading($course->fullname);
 $PAGE->set_title(get_string('course_attendance', 'local_attendance'));
 
 $message = '';

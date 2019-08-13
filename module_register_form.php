@@ -17,7 +17,7 @@
  * Attendance - Module register input form
  *
  * @package    local_attendance
- * @copyright  2018, Oxford Brookes University
+ * @copyright  2019, Oxford Brookes University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -33,22 +33,14 @@ class module_register_form extends moodleform {
 		
 		$mform->addElement('html', '<h2>' . get_string('module_register', 'local_attendance')  . '</h2>');
 
-		$moduleArray = array();
-		$modules = get_staff_modules($USER->id);
-		foreach ($modules as $module) {
-			$moduleArray[$module->id] = $module->shortname;
+		if ($this->_customdata['id'] > 1) {
+			$mform->addElement('hidden', 'id', $this->_customdata['id']);
+			$mform->setType('id', PARAM_RAW);
 		}
-		$mform->addElement('select', 'module_id', get_string('module', 'local_attendance'), $moduleArray);
 		
-		$sessionArray = array();
-		$today = date();
-		$sessions = get_staff_sessions($USER->id, $today);
-		foreach($sessions as $session) {
-			if ($session->sessdate >= $today) {
-				$sessionArray[$session->sessdate] = date("d M y, H:i", $session->sessdate);
-			}
-		}
-		$mform->addElement('select', 'sessdate', get_string('day', 'local_attendance'), $sessionArray);
+		$mform->addElement('select', 'module_id', get_string('module', 'local_attendance'), $this->_customdata['modules']);
+		
+		$mform->addElement('select', 'sessdate', get_string('day', 'local_attendance'), $this->_customdata['sessions']);
 		
         $this->add_action_buttons(true, get_string('download', 'local_attendance'));
     }

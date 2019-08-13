@@ -17,7 +17,7 @@
  * Attendance - Advisee attendance input form
  *
  * @package    local_attendance
- * @copyright  2018, Oxford Brookes University
+ * @copyright  2019, Oxford Brookes University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -35,6 +35,11 @@ class advisee_attendance_form extends moodleform {
 		$mform->addElement('html', '<h2>' . get_string('advisee_attendance', 'local_attendance')  . '</h2>');
 		$mform->addElement('html', '<p>This report allows you to retrieve attendance data for your academic advisees.</p>');
 
+		if ($this->_customdata['id'] > 1) {
+			$mform->addElement('hidden', 'id', $this->_customdata['id']);
+			$mform->setType('id', PARAM_RAW);
+		}
+		
 		$adviseeArray = array();
 		$myAdvisees = $this->_customdata['advisees'];
 		foreach($myAdvisees as $myAdvisee) {

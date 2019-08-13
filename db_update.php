@@ -17,7 +17,7 @@
  * Attendance - db updates
  *
  * @package    local_attendance
- * @copyright  2018, Oxford Brookes University
+ * @copyright  2019, Oxford Brookes University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -109,10 +109,10 @@ function get_session_ids($module_id, $date) {
 	return $DB->get_records_sql($sql, array($module_id, $date));
 }
 
-function get_staff_modules($userid) {
+function get_staff_modules($userid, $date) {
 	global $DB;
 	
-	$sql = 'SELECT c.idnumber, c.shortname
+	$sql = 'SELECT DISTINCT c.id, c.fullname
 			FROM {role_assignments} ra, {user} u, {course} c, {context} cxt, {attendance_sessions} ass, {attendance} att
 		WHERE ra.userid = u.id
 			AND ra.contextid = cxt.id
@@ -120,11 +120,12 @@ function get_staff_modules($userid) {
 			AND c.id = att.course
 			AND cxt.instanceid = c.id
 			AND (roleid = 3 OR roleid = 12 OR roleid = 61)
-			AND c.visible = 1
 			AND u.id = ?
-		ORDER BY c.idnumber';
+			AND c.visible = 1
+			AND c.enddate >= ?
+		ORDER BY c.fullname';
 	
-	return $DB->get_records_sql($sql, array($userid));
+	return $DB->get_records_sql($sql, array($userid, $date));
 }
 
 function get_module_staff_emails($courseid) {

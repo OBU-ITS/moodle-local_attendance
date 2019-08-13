@@ -37,6 +37,11 @@ $dir = $home . 'local/attendance/';
 $url = $dir . 'jisc_attendance.php';
 $back = $dir . 'menu.php';
 
+$id = optional_param('id', 0, PARAM_INT);
+if ($id > 1) {
+	$back .= '?id=' . $id;
+}
+
 $context = context_system::instance();
 $PAGE->set_pagelayout('standard');
 $PAGE->set_url($url);
@@ -46,7 +51,11 @@ $PAGE->set_title(get_string('jisc_attendance', 'local_attendance') . ' (CSV)');
 
 $message = '';
 
-$mform = new jisc_attendance_form(null, array());
+$parameters = [
+	'id' => $id
+];
+
+$mform = new jisc_attendance_form(null, $parameters);
 
 if ($mform->is_cancelled()) {
     redirect($back);

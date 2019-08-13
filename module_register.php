@@ -30,13 +30,18 @@ require_once('./module_register_form.php');
 require_login();
 
 $home = new moodle_url('/');
-if (!is_siteadmin) {
+if (!is_siteadmin()) {
 	redirect($home);
 }
 
 $dir = $home . 'local/attendance/';
 $url = $dir . 'module_register.php';
 $back = $dir . 'menu.php';
+
+$id = optional_param('id', 0, PARAM_INT);
+if ($id > 1) {
+	$back .= '?id=' . $id;
+}
 
 $context = context_system::instance();
 $PAGE->set_pagelayout('standard');
@@ -47,7 +52,27 @@ $PAGE->set_title(get_string('module_register', 'local_attendance'));
 
 $message = '';
 
-$mform = new module_register_form(null, array());
+$today = intdiv(time(), 86400) * 86400;
+$modules = get_staff_modules($USER->id, $today);
+$moduleArray = array();
+foreach ($modules as $module) {
+	$moduleArray[$module->id] = $module->fullname;
+}
+
+$today = intdiv(time(), 86400) * 86400;
+$sessions = get_staff_sessions($USER->id, $today);
+$sessionArray = array();
+foreach($sessions as $session) {
+	$sessionArray[$session->sessdate] = date("d M y, H:i", $session->sessdate);
+}
+
+$parameters = [
+	'id' => $id,
+	'modules' => $moduleArray,
+	'sessions' => $sessionArray
+];
+
+$mform = new module_register_form(null, $parameters);
 
 if ($mform->is_cancelled()) {
     redirect($back);

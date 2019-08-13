@@ -33,14 +33,18 @@ function local_attendance_extend_navigation($navigation) {
 	}
 
 	$advisees = get_academic_advisees($USER->id);
-	if (!is_siteadmin() && empty($advisees) && (!$PAGE->course || ($PAGE->course->id == 1)
+	if (!is_siteadmin() && empty($advisees) && (!$PAGE->course || ($PAGE->course->id < 2)
 		|| (!has_capability('mod/attendance:viewreports', context_course::instance($PAGE->course->id))
 			&& (!has_capability('mod/attendance:takeattendances', context_course::instance($PAGE->course->id)) || (strpos($PAGE->course->idnumber, '.') === false))))) {
 		return;
 	}
 
+	$menu = '/local/attendance/menu.php';
+	if ($PAGE->course->id > 1) {
+		$menu .= '?id=' . $PAGE->course->id;
+	}
 	$nodeHome = $navigation->children->get('1')->parent;
-	$node = $nodeHome->add(get_string('attendance_reports', 'local_attendance'), '/local/attendance/menu.php', navigation_node::TYPE_SYSTEM);
+	$node = $nodeHome->add(get_string('attendance_reports', 'local_attendance'), $menu, navigation_node::TYPE_SYSTEM);
 	$node->showinflatnavigation = true;
 
 	return;

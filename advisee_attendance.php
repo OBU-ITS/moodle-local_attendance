@@ -38,16 +38,22 @@ $dir = $home . 'local/attendance/';
 $url = $dir . 'advisee_attendance.php';
 $back = $dir . 'menu.php';
 
+$id = optional_param('id', 0, PARAM_INT);
+if ($id > 1) {
+	$back .= '?id=' . $id;
+}
+
 $context = context_system::instance();
 $PAGE->set_pagelayout('standard');
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_heading($SITE->fullname);
-$PAGE->set_title(get_string('advisee_attendance', 'local_attendance'));
+$PAGE->set_title(get_string('attendance_reports', 'local_attendance'));
  
 $message = '';
 
 $parameters = [
+	'id' => $id,
 	'advisees' => $advisees
 ];
 
